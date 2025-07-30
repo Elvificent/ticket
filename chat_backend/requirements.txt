@@ -5,7 +5,6 @@ numpy==1.24.3
 langchain==0.1.0
 langchain-google-genai==0.0.5
 langchain-community==0.0.13
-pypika>=0.48.9
 chromadb==0.4.22
 PyPDF2==3.0.1
 requests==2.31.0
@@ -14,3 +13,4 @@ PyJWT==2.8.0
 psutil==6.0.0
 pypdf==5.5.0
 cryptography==44.0.3
+google-generativeai==0.3.2
