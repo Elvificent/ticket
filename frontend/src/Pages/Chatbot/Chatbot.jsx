@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import './Chatbot.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 import { useNavigate } from 'react-router-dom';
 import { FaSpinner } from 'react-icons/fa';
 import { chatbotAPI, sessionAPI, userService, productAPI, ticketTypeAPI } from '../../Services/api';
 
-const API_BASE_URL = 'http://localhost:8082';
+const API_BASE_URL = '/api';
 
 function formatSessionTime(dateString) {
   if (!dateString) return '';
@@ -41,10 +42,111 @@ const Chatbot = () => {
   const [showTicketPrompt, setShowTicketPrompt] = useState(false);
   const [checkingForActiveSessions, setCheckingForActiveSessions] = useState(true);
   const [showEmergencyToast, setShowEmergencyToast] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechRecognition, setSpeechRecognition] = useState(null);
+  const [speechError, setSpeechError] = useState('');
+  const [ttsEnabled, setTtsEnabled] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [speechSynthesis, setSpeechSynthesis] = useState(null);
 
   const chatListRef = useRef(null);
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
+
+  // Initialize Speech Recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-US';
+      
+      recognition.onstart = () => {
+        setIsListening(true);
+        setSpeechError('');
+      };
+      
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setMessage(prev => prev + (prev ? ' ' : '') + transcript);
+      };
+      
+      recognition.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        setSpeechError(`Speech recognition error: ${event.error}`);
+        setIsListening(false);
+      };
+      
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      
+      setSpeechRecognition(recognition);
+    }
+  }, []);
+
+  // Initialize Text-to-Speech
+  useEffect(() => {
+    if ('speechSynthesis' in window) {
+      setSpeechSynthesis(window.speechSynthesis);
+    }
+  }, []);
+
+  // Text-to-Speech functions
+  const speakText = (text) => {
+    if (!speechSynthesis || !ttsEnabled || !text.trim()) return;
+    
+    // Stop any ongoing speech
+    speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    
+    speechSynthesis.speak(utterance);
+  };
+
+  const stopSpeaking = () => {
+    if (speechSynthesis) {
+      speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+  };
+
+  const toggleTTS = () => {
+    setTtsEnabled(prev => {
+      const newState = !prev;
+      if (!newState && isSpeaking) {
+        stopSpeaking();
+      }
+      return newState;
+    });
+  };
+
+  const startListening = () => {
+    if (speechRecognition && !isListening) {
+      try {
+        speechRecognition.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        setSpeechError('Failed to start speech recognition');
+      }
+    }
+  };
+
+  const stopListening = () => {
+    if (speechRecognition && isListening) {
+      speechRecognition.stop();
+    }
+  };
 
   const fetchChatList = async () => {
     try {
@@ -124,6 +226,15 @@ const Chatbot = () => {
     scrollToBottom();
   }, [chatHistory]);
 
+  // Cleanup: Stop speech when component unmounts
+  useEffect(() => {
+    return () => {
+      if (speechSynthesis) {
+        speechSynthesis.cancel();
+      }
+    };
+  }, [speechSynthesis]);
+
   const getUserProfile = async (token) => {
     if (cachedUserProfile) return cachedUserProfile;
     const userResponse = await userService.getCurrentUserProfile();
@@ -184,7 +295,7 @@ const Chatbot = () => {
         if (!sessionId) {
           // No active session, create a new one
           const sessionResponse = await axios.post(
-            `${API_BASE_URL}/api/sessions`,
+            `${API_BASE_URL}/sessions`,
             { title: 'New Support Ticket', ticketSession: false },
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -194,7 +305,7 @@ const Chatbot = () => {
             return;
           }
           await axios.put(
-            `${API_BASE_URL}/api/sessions/${sessionId}/end`,
+            `${API_BASE_URL}/sessions/${sessionId}/end`,
             {},
             { headers: { Authorization: `Bearer ${token}` } }
           );
@@ -243,7 +354,7 @@ const Chatbot = () => {
         };
         // 8. Create the ticket
         const ticketResponse = await axios.post(
-          `${API_BASE_URL}/api/tickets`,
+          `${API_BASE_URL}/tickets`,
           ticketBody,
           {
             headers: {
@@ -317,6 +428,7 @@ const Chatbot = () => {
         { text: '', sender: 'support', loading: true, timestamp: new Date().toISOString() }
       ]);
       setMessage('');
+      setBotLoading(true); // Start thinking animation
       try {
         const response = await chatbotAPI.sendQuery(message);
         
@@ -328,10 +440,19 @@ const Chatbot = () => {
           timestamp: msg.timestamp
         }));
         setChatHistory(formattedMessages);
+        setBotLoading(false); // Stop thinking animation
+        
+        // Speak the latest bot response if TTS is enabled
+        const latestBotMessage = formattedMessages.filter(msg => msg.sender === 'support').pop();
+        if (latestBotMessage && ttsEnabled) {
+          setTimeout(() => speakText(latestBotMessage.text), 500);
+        }
+        
         setShowFeedback(true); // Show feedback after bot response
       } catch (chatbotError) {
         // Remove the loading message if error
         setChatHistory((prev) => prev.filter((msg, idx) => !(msg.loading && idx === prev.length - 1)));
+        setBotLoading(false); // Stop thinking animation on error
         console.error('Error communicating with chatbot:', chatbotError);
         alert('Failed to get response from chatbot.');
       }
@@ -553,6 +674,43 @@ const Chatbot = () => {
         </div>
       </div>
 
+      {/* Animated Speaking Avatar */}
+      {(ttsEnabled || botLoading) && (
+        <div className="speaking-avatar-container">
+          <div className={`speaking-avatar ${isSpeaking ? 'talking' : ''} ${botLoading ? 'thinking' : ''}`}>
+            <div className="avatar-face">
+              <div className="avatar-eyes">
+                <div className="eye left-eye"></div>
+                <div className="eye right-eye"></div>
+              </div>
+              <div className="avatar-mouth">
+                <div className="mouth-shape"></div>
+              </div>
+            </div>
+            <div className="avatar-body"></div>
+            {isSpeaking && (
+              <div className="sound-waves">
+                <div className="wave wave-1"></div>
+                <div className="wave wave-2"></div>
+                <div className="wave wave-3"></div>
+                <div className="wave wave-4"></div>
+                <div className="wave wave-5"></div>
+              </div>
+            )}
+            {botLoading && (
+              <div className="thinking-bubbles">
+                <div className="bubble bubble-1"></div>
+                <div className="bubble bubble-2"></div>
+                <div className="bubble bubble-3"></div>
+              </div>
+            )}
+          </div>
+          <div className="avatar-text">
+            {botLoading ? 'Thinking...' : isSpeaking ? 'AI Assistant Speaking...' : 'TTS Ready'}
+          </div>
+        </div>
+      )}
+
       <div className="chat-main">
         {chatStarted && (
           <div className="chat-header">
@@ -566,6 +724,14 @@ const Chatbot = () => {
               })()}
             </div>
             <div className="chat-header-actions">
+              <button 
+                className={`tts-toggle-btn ${ttsEnabled ? 'enabled' : ''}`}
+                onClick={toggleTTS}
+                title={ttsEnabled ? 'Disable Text-to-Speech' : 'Enable Text-to-Speech'}
+              >
+                <i className={`fas ${ttsEnabled ? 'fa-volume-up' : 'fa-volume-mute'}`}></i>
+                {ttsEnabled ? ' TTS On' : ' TTS Off'}
+              </button>
               <button className="quick-action-btn" onClick={handleNewChat}><b className="new-chat-icon">+</b> New Chat</button>
               <button className="quick-action-btn" onClick={handleEndSession} disabled={!activeSessionId}><b className="end-chat-icon">✖</b> End Session</button>
             </div>
@@ -595,9 +761,20 @@ const Chatbot = () => {
                   ) : (
                     <>
                       <p>{chat.text}</p>
-                      <span className="message-timestamp">
-                        {new Date(chat.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <div className="message-footer">
+                        <span className="message-timestamp">
+                          {new Date(chat.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                        {chat.sender === 'support' && 'speechSynthesis' in window && (
+                          <button 
+                            className="speak-btn"
+                            onClick={() => speakText(chat.text)}
+                            title="Read this message aloud"
+                          >
+                            <i className="fas fa-volume-up"></i>
+                          </button>
+                        )}
+                      </div>
                       {chat.sender === 'support' && index === chatHistory.length - 1 && showFeedback && chatHistory.filter(m => m.sender === 'user').length >= 3 && (
                         <div className="feedback-container">
                           <p>Did I solve your problem?</p>
@@ -676,6 +853,7 @@ const Chatbot = () => {
             {(() => {
               const currentSession = chatList.find((s) => s.id === activeSessionId);
               const isClosed = currentSession && currentSession.status === 'CLOSED';
+              const speechSupported = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
               return (
                 <>
                   <input
@@ -688,10 +866,22 @@ const Chatbot = () => {
                         ? 'Checking for active sessions...' 
                         : isClosed 
                           ? 'This session is closed. You cannot send messages.' 
-                          : 'Type your message...'
+                          : isListening 
+                            ? 'Listening... Speak now'
+                            : 'Type your message or click the microphone to speak...'
                     }
                     disabled={checkingForActiveSessions || isClosed}
                   />
+                  {speechSupported && (
+                    <button 
+                      className={`mic-button ${isListening ? 'listening' : ''}`}
+                      onClick={isListening ? stopListening : startListening}
+                      disabled={checkingForActiveSessions || isClosed}
+                      title={isListening ? 'Stop listening' : 'Start voice input'}
+                    >
+                      <i className={`mic-icon ${isListening ? 'fas fa-stop' : 'fas fa-microphone'}`}></i>
+                    </button>
+                  )}
                   <button onClick={sendMessage} disabled={checkingForActiveSessions || isClosed}>
                     <i className="send-icon">➤</i>Send
                   </button>
@@ -699,6 +889,20 @@ const Chatbot = () => {
               );
             })()}
           </div>
+          {speechError && (
+            <div className="speech-error">
+              {speechError}
+            </div>
+          )}
+          {isSpeaking && (
+            <div className="tts-status">
+              <i className="fas fa-volume-up"></i>
+              <span>Speaking...</span>
+              <button className="stop-tts-btn" onClick={stopSpeaking}>
+                <i className="fas fa-stop"></i>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

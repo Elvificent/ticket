@@ -263,7 +263,7 @@ const ManageEngineers = () => {
                   </div>
                   <div className="engineer-form-row">
                     <label>Level</label>
-                    <input type="number" name="level" min="1" max="3" value={addForm.level} onChange={handleAddChange} required />
+                    <input type="number" name="level" min="1" max="2" value={addForm.level} onChange={handleAddChange} required />
                   </div>
                   <div className="engineer-form-row">
                     <label>Max Tickets</label>
@@ -299,7 +299,7 @@ const ManageEngineers = () => {
                   </div>
                   <div className="engineer-form-row">
                     <label>Level</label>
-                    <input type="number" name="level" min="1" max="3" value={editForm.level} onChange={handleEditChange} required />
+                    <input type="number" name="level" min="1" max="2" value={editForm.level} onChange={handleEditChange} required />
                   </div>
                   <div className="engineer-form-row">
                     <label>Max Tickets</label>
@@ -374,7 +374,6 @@ const ManageEngineers = () => {
             <option value="">All Levels</option>
             <option value="1">Level 1</option>
             <option value="2">Level 2</option>
-            <option value="3">Level 3</option>
           </select>
           <select
             className="filter-dropdown status"

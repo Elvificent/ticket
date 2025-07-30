@@ -1,0 +1,60 @@
+.compare-clean {
+  background-color: white;
+  padding: 80px 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.compare-clean-title {
+  text-align: center;
+  font-size: 40px;
+  font-weight: 700;
+  color: #111;
+  margin-bottom: 40px;
+}
+
+/* .compare-clean-table {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+} */
+
+.compare-clean-table {
+  width: 100%;
+  max-width: 960px; /* match pricing-cards */
+  margin: 40px auto 0 auto; /* top spacing & center */
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 8px;
+  /* box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.08); */
+  overflow: hidden;
+}
+
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 3fr 2fr 2fr 2fr;
+  font-size: 16px;
+  color: #1b1b1b;
+  align-items: center;
+  padding: 20px 1px;
+  background-color: #fff;
+  transition: background 0.2s;
+  justify-items: start;
+}
+
+.compare-row:hover:not(.header) {
+  background-color: #f9f5ef;
+}
+
+.compare-row.header {
+  font-weight: 600;
+  font-size: 18px;
+  background-color: #fff;
+  border-bottom: 2px solid #000;
+}

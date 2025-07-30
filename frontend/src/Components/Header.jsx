@@ -199,6 +199,7 @@ const Header = (props) => {
     const baseLinks = [
       { path: '/', label: 'Home' },
       { path: '/about', label: 'About Us' },
+      { path: '/pricing', label: 'Pricing' }
     ];
     
     // Different service dropdown items based on user role
@@ -327,9 +328,9 @@ const Header = (props) => {
           src={props.logoSrc || "/logo.png"} 
           alt={props.logoAlt || "Techcare Logo"} 
         />
-        <h2>{props.company || "Techcare Customer Support Service"}</h2>
+        <h2>{props.company || "Techcare"}</h2>
       </div>
-
+    
       <div 
         className={`mobile-menu-toggle ${isMobileMenuOpen ? 'active' : ''}`} 
         onClick={toggleMobileMenu}

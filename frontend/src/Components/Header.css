@@ -1,7 +1,7 @@
 /* Main header styles */
 .header {
-  background-color: #3090FF;
-  color: white;
+  background-color: white;
+  color: black;
   padding: 15px 100px;
   display: flex;
   justify-content: space-between;
@@ -13,22 +13,44 @@
 }
 
 /* Logo styles */
-.circular-logo {
+/* .circular-logo {
   width: 50px;
   height: 50px;
   border-radius: 50%;
   object-fit: cover;
   margin-right: 15px;
-}
+} */
+
+/* .header-logo {
+  display: flex;
+  align-items: center;
+} */
 
 .header-logo {
   display: flex;
-  align-items: center;
+  flex-direction: column; /* ✅ Stack vertically */
+  align-items: center;     /* ✅ Center align horizontally */
 }
+
+.circular-logo {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.header-logo h2 {
+  margin-top: 4px;
+  font-size: 16px;
+  color: #e60000; /* Optional: make red like your screenshot */
+  font-weight: bold;
+}
+
 
 .header-logo h2 {
   margin: 0;
   font-size: 1.5rem;
+  color: black;
 }
 
 .header-logo img {
@@ -50,7 +72,7 @@
 }
 
 .header-nav ul li a {
-  color: white;
+  color: black;
   text-decoration: none;
   font-weight: 500;
   transition: color 0.3s;
@@ -60,7 +82,7 @@
 }
 
 .header-nav ul li a:hover {
-  color: #ccc;
+  color: #666;
 }
 
 /* Dropdown styles */
@@ -73,6 +95,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  color: black;
 }
 
 .dropdown-arrow {
@@ -88,7 +111,7 @@
   position: absolute;
   top: 100%;
   left: -13px;
-  background-color: #2980b9;
+  background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   opacity: 0;
@@ -97,7 +120,7 @@
   transition: all 0.3s ease;
   z-index: 1001;
   padding: 0px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-menu.active {
@@ -117,15 +140,16 @@
   white-space: nowrap;
   transition: background-color 0.2s ease;
   font-size: 0.95rem;
+  color: black;
 }
 
 .dropdown-menu li a:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: white;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: black;
 }
 
 .dropdown-menu li {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .dropdown-menu li:last-child {
@@ -146,7 +170,7 @@
 .mobile-menu-toggle span {
   height: 3px;
   width: 100%;
-  background-color: white;
+  background-color: black;
   border-radius: 3px;
   transition: all 0.3s ease;
 }
@@ -195,22 +219,22 @@
   .header-nav ul li {
     margin: 0;
     text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   }
   
   .header-nav ul li a {
     padding: 12px 0;
+    color: black;
   }
   
   /* Mobile dropdown styles */
   .dropdown-menu {
     position: static;
-    background-color: rgba(0, 0, 0, 0.1);
+    background-color: rgba(0, 0, 0, 0.05);
     box-shadow: none;
     max-height: 0;
     overflow: hidden;
     opacity: 1;
-    visibility: visible;
     transform: none;
     transition: max-height 0.3s ease;
     width: 100%;
@@ -221,11 +245,12 @@
   }
   
   .dropdown-menu li {
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
   }
   
   .dropdown-menu li a {
     padding-left: 30px;
+    color: black;
   }
 }
 
@@ -236,6 +261,7 @@
 
   .header-logo h2 {
     font-size: 1.2rem;
+    color: black;
   }
 
   .mobile-menu-toggle {
@@ -250,6 +276,7 @@
   
   .header-logo h2 {
     font-size: 1rem;
+    color: black;
   }
 }
 
@@ -261,17 +288,31 @@
   padding: 12px 20px;
   white-space: nowrap;
   font-size: 0.95rem;
+  color: black;
 }
-.severity-stats-item:hover { background-color: rgba(255,255,255,0.1); }
+.severity-stats-item:hover { 
+  background-color: rgba(0, 0, 0, 0.1); 
+}
 
-.severity-level-low { color: #2ecc71; font-weight: 600; }
-.severity-level-medium { color: #f1c40f; font-weight: 600; }
-.severity-level-high { color: #e67e22; font-weight: 600; }
-.severity-level-critical { color: #e74c3c; font-weight: 600; }
+.severity-level-low { 
+  color: #2ecc71; font-weight: 600; 
+}
+
+.severity-level-medium { 
+  color: #f1c40f; font-weight: 600; 
+}
+
+.severity-level-high { 
+  color: #e67e22; font-weight: 600; 
+}
+
+.severity-level-critical { 
+  color: #e74c3c; font-weight: 600; 
+}
 
 .severity-count-badge {
-  background: rgba(255,255,255,0.9);
-  color: #2980b9;
+  background: rgba(0, 0, 0, 0.1);
+  color: black;
   border-radius: 12px;
   padding: 2px 8px;
   font-size: 12px;

@@ -2,17 +2,6 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f9f9f9;
-  color: #2c3e50;
-}
-
-.app-container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-.main-content {
-  background: linear-gradient(to bottom, #72b3f0, #54a2ec);
-  flex: 1;
+  background-color: white;
+  color:black;
 }

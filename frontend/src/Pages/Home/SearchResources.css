@@ -1,7 +1,7 @@
 @import url('@fortawesome/fontawesome-free/css/all.min.css');
 
 .resources-guides-section {
-  background-image: url('../../../public/resource_background.jpg');
+  /* background-image: url('../../../public/resource_background.jpg'); */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

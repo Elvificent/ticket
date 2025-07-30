@@ -17,7 +17,6 @@ import ViewLogs from './Pages/Admin/ViewLogs';
 import AdminDashboard from './Pages/Admin/AdminDashboard';
 import RAGFileManagement from './Pages/Admin/RAGFileManagement';
 import AssignedTickets from './Pages/Engineer/AssignedTickets';
-// import CreateSupportTicket from './Pages/Engineer/CreateSupportTicket';
 import KnowledgeBase from './Pages/Engineer/KnowledgeBase';
 import AllTickets from './Pages/Manager/AllTickets';
 import ManageEngineers from './Pages/Manager/ManageEngineers';
@@ -27,140 +26,141 @@ import AssignEngineer from './Pages/Manager/AssignEngineer';
 import ForgotPassword from './Pages/ForgotPassword';
 import ResetPassword from './Pages/ResetPassword';
 
+import Pricing from './Pages/Pricing/pricing'; //solution testing sherine 
+
 import { AdminRoute, ProtectedRoute, EngineerRoute, ManagerRoute, CustomerOnlyRoute } from './Pages/Tickets/Auth';
 import './App.css';
 
 const App = () => {
   return (
     <Router>
-      <div className="app-container">
-        <Header />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={
-              <>
-                <Introduction />
-                <SearchResources />
-                <Footer />
-              </>
-            } />
-            <Route path="/about" element={
-              <>
-                <AboutUs />
-                <Footer />
-              </>
-            } />
-            
-            {/* Protected routes that require authentication */}
-            <Route path="/chatbot" element={
-              <CustomerOnlyRoute>
-                <Chatbot />
-              </CustomerOnlyRoute>
-            } />
+      <Header />
+      <Routes>
+        <Route path="/" element={
+          <>
+            <Introduction />
+            <SearchResources />
+            <Footer />
+          </>
+        } />
 
-            <Route path="/view-tickets" element={
-              <CustomerOnlyRoute>
-                <TicketInformation />
-              </CustomerOnlyRoute>
-            } />
-            
-            <Route path="/create-ticket" element={
-              <CustomerOnlyRoute>
-                <CreateTicket />
-              </CustomerOnlyRoute>
-            } />
-            
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } />
-            
-            {/* Admin routes */}
-            <Route path="/admin/dashboard" element={
-              <AdminRoute>
-                <AdminDashboard />
-              </AdminRoute>
-            } />
-            
-            <Route path="/admin/users" element={
-              <AdminRoute>
-                <UserManagement />
-              </AdminRoute>
-            } />
-            
-            <Route path="/admin/logs" element={
-              <AdminRoute>
-                <ViewLogs />
-              </AdminRoute>
-            } />
-            
-            <Route path="/admin/rag-files" element={
-              <AdminRoute>
-                <RAGFileManagement />
-              </AdminRoute>
-            } />
-            
-            {/* Engineer routes (if you have any) */}
-            <Route path="/tickets/assigned" element={
-              <EngineerRoute>
-                <AssignedTickets />
-              </EngineerRoute>
-            } />
+        <Route path="/pricing" element={
+          <>
+            <Pricing />
+            <Footer />
+          </>
+        } />
 
-            {/* <Route path="/tickets/create" element={
-              <EngineerRoute>
-                <CreateSupportTicket />
-              </EngineerRoute>
-            } /> */}
 
-            <Route path="/knowledge-base" element={
-              <EngineerRoute>
-                <KnowledgeBase />
-              </EngineerRoute>
-            } />
+        <Route path="/about" element={
+          <>
+            <AboutUs />
+            <Footer />
+          </>
+        } />
             
-            {/* Manager routes (if you have any) */}
-            <Route path="/manager/dashboard" element={
-              <ManagerRoute>
-                <ManagerDashboard />
-              </ManagerRoute>
-            } />
+        {/* Protected routes that require authentication */}
+        <Route path="/chatbot" element={
+          <CustomerOnlyRoute>
+            <Chatbot />
+          </CustomerOnlyRoute>
+        } />
 
-            <Route path="/tickets" element={
-              <ManagerRoute>
-                <AllTickets />
-              </ManagerRoute>
-            } />
-
-            <Route path="/engineers" element={
-              <ManagerRoute>
-                <ManageEngineers />
-              </ManagerRoute>
-            } />
-
-            <Route path="/manager/tickets/:id" element={<ManagerTicketDetails />} />
-            <Route path="/manager/tickets/:id/assign" element={<AssignEngineer />} />
+        <Route path="/view-tickets" element={
+          <CustomerOnlyRoute>
+            <TicketInformation />
+          </CustomerOnlyRoute>
+        } />
             
-            <Route path="/resources" element={
-              <>
-                <ResourcesAndGuides />
-                <Footer />
-              </>
-            } />
-            <Route path="/login" element={<Login />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="*" element={
-              <div className="not-found">
-                <h2>Page Not Found</h2>
-                <p>The page you're looking for doesn't exist.</p>
-                <Link to="/" className="auth-button">Go Home</Link>
-              </div>
-            } />
-          </Routes>
-        </main>
-      </div>
+        <Route path="/create-ticket" element={
+          <CustomerOnlyRoute>
+            <CreateTicket />
+          </CustomerOnlyRoute>
+        } />
+            
+        <Route path="/profile" element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        } />
+            
+        {/* Admin routes */}
+        <Route path="/admin/dashboard" element={
+          <AdminRoute>
+            <AdminDashboard />
+          </AdminRoute>
+        } />
+            
+        <Route path="/admin/users" element={
+          <AdminRoute>
+            <UserManagement />
+          </AdminRoute>
+        } />
+          
+        <Route path="/admin/logs" element={
+          <AdminRoute>
+            <ViewLogs />
+          </AdminRoute>
+        } />
+            
+        <Route path="/admin/rag-files" element={
+          <AdminRoute>
+            <RAGFileManagement />
+          </AdminRoute>
+        } />
+            
+        {/* Engineer routes (if you have any) */}
+        <Route path="/tickets/assigned" element={
+          <EngineerRoute>
+            <AssignedTickets />
+          </EngineerRoute>
+        } />
+
+        <Route path="/knowledge-base" element={
+          <EngineerRoute>
+            <KnowledgeBase />
+          </EngineerRoute>
+        } />
+            
+        {/* Manager routes (if you have any) */}
+        <Route path="/manager/dashboard" element={
+          <ManagerRoute>
+            <ManagerDashboard />
+          </ManagerRoute>
+        } />
+
+        <Route path="/tickets" element={
+          <ManagerRoute>
+            <AllTickets />
+          </ManagerRoute>
+        } />
+
+        <Route path="/engineers" element={
+          <ManagerRoute>
+            <ManageEngineers />
+          </ManagerRoute>
+        } />
+
+        <Route path="/manager/tickets/:id" element={<ManagerTicketDetails />} />
+        <Route path="/manager/tickets/:id/assign" element={<AssignEngineer />} />
+            
+        <Route path="/resources" element={
+          <>
+            <ResourcesAndGuides />
+            <Footer />
+          </>
+        } />
+        <Route path="/login" element={<Login />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={
+          <div className="not-found">
+            <h2>Page Not Found</h2>
+            <p>The page you're looking for doesn't exist.</p>
+            <Link to="/" className="auth-button">Go Home</Link>
+          </div>
+        } />
+      </Routes>
     </Router>
   );
 };
