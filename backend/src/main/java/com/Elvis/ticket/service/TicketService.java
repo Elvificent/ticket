@@ -34,11 +34,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import com.Elvis.ticket.model.ServilityLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class TicketService {
+    private static final Logger logger = LoggerFactory.getLogger(TicketService.class);
     private final TicketRepository ticketRepository;
     private final EngineerRepository engineerRepository;
     private final CustomerRepository customerRepository;
@@ -450,31 +452,35 @@ public class TicketService {
     public TicketAttachment saveAttachment(Long ticketId, MultipartFile file) throws Exception {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
-        if (file == null || file.isEmpty()) {
-            throw new RuntimeException("File is empty");
+        if (file == null) {
+            throw new IllegalArgumentException("File is missing");
+        }
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("File is empty");
         }
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || originalFilename.isBlank()) {
-            throw new RuntimeException("Invalid file name");
+            throw new IllegalArgumentException("Filename is required");
         }
-        String safeOriginalFilename = Paths.get(originalFilename).getFileName().toString();
-        if (safeOriginalFilename.isBlank()) {
-            throw new RuntimeException("Invalid file name");
+        String sanitizedFilename = Paths.get(originalFilename).getFileName().toString();
+        if (sanitizedFilename.isBlank()) {
+            throw new IllegalArgumentException("Filename contains invalid path components");
         }
-        String timestampedFilename = System.currentTimeMillis() + "_" + safeOriginalFilename;
+        String timestampedFilename = System.currentTimeMillis() + "_" + sanitizedFilename;
         // Ensure directory exists
         Path dir = Paths.get(ATTACHMENT_BASE_PATH, String.valueOf(ticketId)).toAbsolutePath().normalize();
         Files.createDirectories(dir);
         // Save file to disk
         Path filePath = dir.resolve(timestampedFilename).normalize();
         if (!filePath.startsWith(dir)) {
-            throw new RuntimeException("Invalid file path");
+            logger.warn("Path traversal attempt detected for ticket {} and filename {}", ticketId, originalFilename);
+            throw new IllegalArgumentException("Path traversal attempt detected");
         }
-        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(file.getInputStream(), filePath);
         // Save metadata to DB
         TicketAttachment attachment = new TicketAttachment();
         attachment.setTicket(ticket);
-        attachment.setFilename(safeOriginalFilename);
+        attachment.setFilename(sanitizedFilename);
         attachment.setContentType(file.getContentType());
         attachment.setFilePath(filePath.toString());
         attachment.setUploadedAt(java.time.LocalDateTime.now());
