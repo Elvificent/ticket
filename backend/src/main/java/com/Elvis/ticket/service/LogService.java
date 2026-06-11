@@ -11,6 +11,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -111,7 +113,24 @@ public class LogService {
      * Get log entries from a specific file with optional filtering
      */
     public List<LogEntry> getLogContent(String fileName, String level, String search, Integer limit) {
-        File logFile = new File(logDirectory, fileName);
+        if (fileName == null || fileName.isBlank()) {
+            return Collections.emptyList();
+        }
+        final Path resolvedPath;
+        try {
+            String safeFileName = Paths.get(fileName).getFileName().toString();
+            if (!safeFileName.endsWith(".log")) {
+                return Collections.emptyList();
+            }
+            Path basePath = Paths.get(logDirectory).toAbsolutePath().normalize();
+            resolvedPath = basePath.resolve(safeFileName).normalize();
+            if (!resolvedPath.startsWith(basePath)) {
+                return Collections.emptyList();
+            }
+        } catch (Exception e) {
+            return Collections.emptyList();
+        }
+        File logFile = resolvedPath.toFile();
         logger.info("Attempting to read log file: {}", logFile.getAbsolutePath());
         logger.info("File exists: {}, size: {} bytes", logFile.exists(), logFile.length());
         

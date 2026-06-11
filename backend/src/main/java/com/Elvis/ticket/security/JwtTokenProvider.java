@@ -90,7 +90,6 @@ public class JwtTokenProvider {
 
     public boolean validateToken(String token) {
         try {
-            logger.debug("Validating token: {}", token);
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             boolean isValid = !isTokenExpired(token);
             logger.info("Token validation result: {}", isValid);

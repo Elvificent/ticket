@@ -34,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import com.Elvis.ticket.model.ServilityLevel;
 
 @Service
@@ -449,17 +450,31 @@ public class TicketService {
     public TicketAttachment saveAttachment(Long ticketId, MultipartFile file) throws Exception {
         Ticket ticket = ticketRepository.findById(ticketId)
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
+        if (file == null || file.isEmpty()) {
+            throw new RuntimeException("File is empty");
+        }
+        String originalFilename = file.getOriginalFilename();
+        if (originalFilename == null || originalFilename.isBlank()) {
+            throw new RuntimeException("Invalid file name");
+        }
+        String safeOriginalFilename = Paths.get(originalFilename).getFileName().toString();
+        if (safeOriginalFilename.isBlank()) {
+            throw new RuntimeException("Invalid file name");
+        }
+        String timestampedFilename = System.currentTimeMillis() + "_" + safeOriginalFilename;
         // Ensure directory exists
-        Path dir = Paths.get(ATTACHMENT_BASE_PATH, String.valueOf(ticketId));
+        Path dir = Paths.get(ATTACHMENT_BASE_PATH, String.valueOf(ticketId)).toAbsolutePath().normalize();
         Files.createDirectories(dir);
         // Save file to disk
-        String filename = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-        Path filePath = dir.resolve(filename);
-        Files.copy(file.getInputStream(), filePath);
+        Path filePath = dir.resolve(timestampedFilename).normalize();
+        if (!filePath.startsWith(dir)) {
+            throw new RuntimeException("Invalid file path");
+        }
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         // Save metadata to DB
         TicketAttachment attachment = new TicketAttachment();
         attachment.setTicket(ticket);
-        attachment.setFilename(file.getOriginalFilename());
+        attachment.setFilename(safeOriginalFilename);
         attachment.setContentType(file.getContentType());
         attachment.setFilePath(filePath.toString());
         attachment.setUploadedAt(java.time.LocalDateTime.now());

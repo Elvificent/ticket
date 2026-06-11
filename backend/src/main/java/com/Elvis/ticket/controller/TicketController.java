@@ -246,6 +246,9 @@ public class TicketController {
     public ResponseEntity<Resource> downloadAttachment(@PathVariable Long ticketId, @PathVariable Long attachmentId) {
         try {
             TicketAttachment attachment = ticketService.getAttachment(attachmentId);
+            if (attachment.getTicket() == null || !ticketId.equals(attachment.getTicket().getId())) {
+                return ResponseEntity.notFound().build();
+            }
             Path filePath = Paths.get(attachment.getFilePath());
             Resource resource = new UrlResource(filePath.toUri());
             if (!resource.exists()) {
